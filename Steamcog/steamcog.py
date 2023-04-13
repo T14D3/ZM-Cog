@@ -23,7 +23,7 @@ class Steamcog(commands.Cog):
 
     @commands.command(name="cleansteamids")
     async def cleanlist(self, ctx, *roles: discord.Role):
-        role_ids = [str(role.id) for role in roles]
+        role_ids = [role.id for role in roles]  # convert role IDs to int
         with open("steam_ids.txt", "r+") as file:
             lines = file.readlines()
             file.seek(0)
@@ -31,16 +31,13 @@ class Steamcog(commands.Cog):
             for line in lines:
                 discord_id, steam_id = line.strip().split("-")
                 member = ctx.guild.get_member(int(discord_id))
-                print(f"Roles: {roles}")
-                print(f"Member roles: {member.roles}")
-                print(f"Member role IDs: {member._roles}")
-
-                if not member or any(role_id in role_ids for role_id in member._roles):
+                if not member or any(role_id in member._roles for role_id in role_ids):
                     file.write(line)
                 else:
                     count += 1
             file.truncate()
         await ctx.send(f"Cleaned {count} steam IDs from the file.")
+
 
     @commands.command(name="fetchsteamids")
     async def fetchsteamids(self, ctx):
