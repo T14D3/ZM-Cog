@@ -23,7 +23,7 @@ class Steamcog(commands.Cog):
             await ctx.send(f"{ctx.author.mention}, you need to provide a Steam ID.")
 
     @commands.command(name="cleansteamids")
-    @commands.has_permissions(manage_members=True)
+    @commands.has_permissions(manage_roles=True)
     async def cleanlist(self, ctx, *roles: discord.Role):
         role_ids = [role.id for role in roles]  # convert role IDs to int
         with open("steam_ids.txt", "r+") as file:
@@ -42,7 +42,7 @@ class Steamcog(commands.Cog):
 
 
     @commands.command(name="fetchsteamids")
-    @commands.has_permissions(manage_members=True)
+    @commands.has_permissions(manage_roles=True)
     async def fetchsteamids(self, ctx):
         with open("steam_ids.txt", "r") as file:
             steam_ids = [line.strip().split("-")[1] for line in file.readlines()]
