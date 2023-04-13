@@ -1,0 +1,7 @@
+{
+    "author" : ["T14D3 (T14D3#5171)"],
+    "install_msg" : "Thanks for installing!",
+    "name" : "ZM-Cog",
+    "short" : "Cogs for the Zebra Monkeys discord server",
+    "description" : "Collection of cogs for utility purposes"
+}
