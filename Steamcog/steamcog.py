@@ -44,7 +44,10 @@ class Steamcog(commands.Cog):
         with open("steam_ids.txt", "r") as file:
             steam_ids = [line.strip().split("-")[1] for line in file.readlines()]
         ids_str = "\n".join(steam_ids)
-        await ctx.send(content=ids_str, file=discord.File(filename="ids.txt"))
+        ids_bytes = ids_str.encode("utf-8")
+        file = discord.File(fp=io.BytesIO(ids_bytes), filename="ids.txt")
+        await ctx.send(file=file)
+
 
 
 
