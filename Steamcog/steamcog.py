@@ -1,4 +1,5 @@
 from redbot.core import commands
+import discord
 import os
 
 
