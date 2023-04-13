@@ -30,7 +30,7 @@ class Steamcog(commands.Cog):
             count = 0
             for line in lines:
                 discord_id, steam_id = line.strip().split("-")
-                member = await ctx.guild.get_member(int(discord_id))
+                member = ctx.guild.get_member(int(discord_id))
                 if not member or any(role_id in role_ids for role_id in member._roles):
                     file.write(line)
                 else:
