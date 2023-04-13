@@ -1,4 +1,5 @@
 import discord
+import io
 from redbot.core import commands
 
 class Steamcog(commands.Cog):
