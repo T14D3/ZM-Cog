@@ -4,18 +4,20 @@ from typing import Dict, Union
 class SteamCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.settings = self.bot.get_cog("Settings")
 
     @commands.command(name="mysteamid")
     async def mysteamid(self, ctx, steam_id: str):
         steam_id = steam_id.strip()
         if steam_id:
-            async with self.config.steam_ids() as steam_ids:
-                if str(ctx.author.id) in steam_ids:
-                    await ctx.send(f"{ctx.author.mention}, your Steam ID has been updated.")
-                steam_ids[str(ctx.author.id)] = steam_id
-                with open("steam_ids.txt", "w") as f:
-                    for discord_id, steam_id in steam_ids.items():
-                        f.write(f"{discord_id}-{steam_id}\n")
+            with open("steam_ids.txt", "r+") as f:
+                lines = f.readlines()
+                f.seek(0)
+                for line in lines:
+                    if str(ctx.author.id) not in line:
+                        f.write(line)
+                f.truncate()
+                f.write(f"{ctx.author.id}-{steam_id}\n")
             await ctx.send(f"{ctx.author.mention}, your Steam ID has been saved.")
         else:
             await ctx.send(f"{ctx.author.mention}, you need to provide a Steam ID.")
