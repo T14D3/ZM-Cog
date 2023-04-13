@@ -1,59 +1,72 @@
-from redbot.core import commands
-from typing import Dict, Union
+import discord
+from discord.ext import commands
+
+import os
+
 
 class SteamCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
-        self.settings = self.bot.get_cog("Settings")
+
+    async def check_role(self, member, roles):
+        """
+        Check if a member has at least one of the roles provided.
+        """
+        member_roles = [role.id for role in member.roles]
+        return bool(set(member_roles).intersection(set(roles)))
 
     @commands.command(name="mysteamid")
     async def mysteamid(self, ctx, steam_id: str):
         steam_id = steam_id.strip()
         if steam_id:
-            with open("steam_ids.txt", "r+") as f:
-                lines = f.readlines()
-                f.seek(0)
-                for line in lines:
-                    if str(ctx.author.id) not in line:
-                        f.write(line)
-                f.truncate()
-                f.write(f"{ctx.author.id}-{steam_id}\n")
-            await ctx.send(f"{ctx.author.mention}, your Steam ID has been saved.")
+            # check if the discord ID already exists in the file
+            discord_id = str(ctx.author.id)
+            with open("steam_ids.txt", "r") as f:
+                for line in f:
+                    if discord_id in line:
+                        await ctx.send(f"{ctx.author.mention}, your Steam ID has been updated.")
+                        break
+                else:
+                    await ctx.send(f"{ctx.author.mention}, your Steam ID has been saved.")
+            # add the discord ID - steam ID pair to the file
+            with open("steam_ids.txt", "a") as f:
+                f.write(f"{discord_id}-{steam_id}\n")
         else:
             await ctx.send(f"{ctx.author.mention}, you need to provide a Steam ID.")
 
     @commands.command(name="cleanlist")
-    async def cleanlist(self, ctx, *role_ids: Union[int]):
+    async def cleanlist(self, ctx, *roles: discord.Role):
+        # get the IDs of the roles provided
+        role_ids = [role.id for role in roles]
+
+        # read the file and remove the entries that don't have at least one of the roles provided
         with open("steam_ids.txt", "r") as f:
-            steam_ids = f.read().strip().split("\n")
-        new_steam_ids = []
-        for steam_id in steam_ids:
-            discord_id, steam_id = steam_id.split(":")
-            member = ctx.guild.get_member(int(discord_id))
-            if member:
-                roles = [role.id for role in member.roles]
-                if any(role_id in roles for role_id in role_ids):
-                    new_steam_ids.append(f"{discord_id}:{steam_id}")
+            lines = f.readlines()
         with open("steam_ids.txt", "w") as f:
-            f.write("\n".join(new_steam_ids))
-        await ctx.send(f"{len(steam_ids) - len(new_steam_ids)} Steam IDs have been removed.")
-        
-    
+            cleaned = 0
+            for line in lines:
+                discord_id, steam_id = line.strip().split("-")
+                member = ctx.guild.get_member(int(discord_id))
+                if member and await self.check_role(member, role_ids):
+                    f.write(f"{discord_id}-{steam_id}\n")
+                else:
+                    cleaned += 1
+            await ctx.send(f"{ctx.author.mention}, cleaned {cleaned} entries from the list.")
 
     @commands.command(name="fetchsteamids")
     async def fetchsteamids(self, ctx):
+        # read the file and extract the steam IDs
         steam_ids = []
         with open("steam_ids.txt", "r") as f:
             for line in f:
-                steam_ids.append(line.strip())
-        if steam_ids:
-            file_content = "\n".join(steam_ids)
-            file = discord.File(filename="ids.txt", fp=io.StringIO(file_content))
-            await ctx.send(file=file)
-        else:
-            await ctx.send("No Steam IDs found in the file.")
+                _, steam_id = line.strip().split("-")
+                steam_ids.append(steam_id)
 
+        # create a file and attach it to the bot's response
+        with open("ids.txt", "w") as f:
+            f.write("\n".join(steam_ids))
+        with open("ids.txt", "rb") as f:
+            await ctx.send(file=discord.File(f, "ids.txt"))
 
-        
 def setup(bot):
     bot.add_cog(SteamCog(bot))
