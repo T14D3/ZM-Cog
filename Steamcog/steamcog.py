@@ -1,26 +1,61 @@
-import discord
-from discord.ext import commands
+from redbot.core import commands
+import os
+
 
 class SteamCog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
+        self.file_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), "steam_id.txt")
+        self.load_steam_ids()
 
-    # Command to register user's steam ID
-    @commands.command()
-    async def register(self, ctx, steam_id: int):
-        with open("steamids.txt", "a") as file:
-            file.write(f"{ctx.author.id}-{steam_id}\n")
-        await ctx.send("Steam ID registered!")
+    def load_steam_ids(self):
+        self.steam_ids = {}
+        try:
+            with open(self.file_path) as f:
+                for line in f:
+                    line = line.strip()
+                    if not line:
+                        continue
+                    discord_id, steam_id = line.split("-")
+                    self.steam_ids[discord_id] = steam_id
+        except FileNotFoundError:
+            pass
 
-    # Command to check for steam IDs associated with specific roles
+    def save_steam_ids(self):
+        with open(self.file_path, "w") as f:
+            for discord_id, steam_id in self.steam_ids.items():
+                f.write(f"{discord_id}-{steam_id}\n")
+
     @commands.command()
-    async def check(self, ctx, *roles: discord.Role):
-        # Get list of user IDs with specified roles
-        role_ids = [member.id for member in ctx.guild.members if any(role in member.roles for role in roles)]
-        # Read file to get all steam IDs
-        with open("steamids.txt", "r") as file:
-            steam_ids = file.readlines()
-        # Filter steam IDs for those associated with role IDs
-        steam_ids = [line.split("-")[1].strip() for line in steam_ids if int(line.split("-")[0]) in role_ids]
-        # Output remaining steam IDs
-        await ctx.send("Remaining Steam IDs: \n" + "\n".join(steam_ids))
+    async def mysteamid(self, ctx, steamid):
+        discord_id = str(ctx.author.id)
+        self.steam_ids[discord_id] = steamid
+        self.save_steam_ids()
+        await ctx.send(f"Your steam ID ({steamid}) has been saved.")
+
+    @commands.command()
+    async def cleanlist(self, ctx, *role_names):
+        guild = ctx.guild
+        if not role_names:
+            await ctx.send("Please provide at least one role name to clean the list.")
+            return
+
+        roles_to_check = [discord.utils.get(guild.roles, name=r) for r in role_names]
+        if None in roles_to_check:
+            await ctx.send("One or more of the specified roles do not exist.")
+            return
+
+        new_steam_ids = {}
+        for discord_id, steam_id in self.steam_ids.items():
+            member = guild.get_member(int(discord_id))
+            if member is not None and any(role in member.roles for role in roles_to_check):
+                new_steam_ids[discord_id] = steam_id
+        self.steam_ids = new_steam_ids
+        self.save_steam_ids()
+
+        steam_ids_str = "\n".join(f"{discord_id}: {steam_id}" for discord_id, steam_id in self.steam_ids.items())
+        await ctx.send(f"Remaining Steam IDs:\n{steam_ids_str}")
+
+
+def setup(bot):
+    bot.add_cog(SteamCog(bot))
