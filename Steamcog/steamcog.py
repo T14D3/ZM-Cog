@@ -31,6 +31,10 @@ class Steamcog(commands.Cog):
             for line in lines:
                 discord_id, steam_id = line.strip().split("-")
                 member = ctx.guild.get_member(int(discord_id))
+                print(f"Roles: {roles}")
+                print(f"Member roles: {member.roles}")
+                print(f"Member role IDs: {member._roles}")
+
                 if not member or any(role_id in role_ids for role_id in member._roles):
                     file.write(line)
                 else:
