@@ -37,6 +37,17 @@ class SteamCog(commands.Cog):
         with open("steam_ids.txt", "w") as f:
             f.write("\n".join(new_steam_ids))
         await ctx.send(f"{len(steam_ids) - len(new_steam_ids)} Steam IDs have been removed.")
+        
+    
+
+    @commands.command(name="fetchsteamids")
+    async def fetchsteamids(self, ctx):
+        with open("steam_ids.txt", "r") as f:
+            steam_ids = f.readlines()
+            steam_ids = [line.strip().split("-")[1] for line in steam_ids]
+            steam_ids_text = "\n".join(steam_ids)
+            file = discord.File(filename="ids.txt", fp=io.StringIO(steam_ids_text))
+            await ctx.send(file=file)
 
         
 def setup(bot):
