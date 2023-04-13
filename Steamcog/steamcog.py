@@ -44,8 +44,8 @@ class Steamcog(commands.Cog):
         with open("steam_ids.txt", "r") as file:
             steam_ids = [line.strip().split("-")[1] for line in file.readlines()]
         ids_str = "\n".join(steam_ids)
-        file = discord.File(filename="ids.txt", content=ids_str)
-        await ctx.send(file=file)
+        await ctx.send(content=ids_str, file=discord.File(filename="ids.txt"))
+
 
 
 def setup(bot):
