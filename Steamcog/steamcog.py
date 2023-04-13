@@ -42,12 +42,17 @@ class SteamCog(commands.Cog):
 
     @commands.command(name="fetchsteamids")
     async def fetchsteamids(self, ctx):
+        steam_ids = []
         with open("steam_ids.txt", "r") as f:
-            steam_ids = f.readlines()
-            steam_ids = [line.strip().split("-")[1] for line in steam_ids]
-            steam_ids_text = "\n".join(steam_ids)
-            file = discord.File(filename="ids.txt", fp=io.StringIO(steam_ids_text))
+            for line in f:
+                steam_ids.append(line.strip())
+        if steam_ids:
+            file_content = "\n".join(steam_ids)
+            file = discord.File(filename="ids.txt", fp=io.StringIO(file_content))
             await ctx.send(file=file)
+        else:
+            await ctx.send("No Steam IDs found in the file.")
+
 
         
 def setup(bot):
