@@ -1,6 +1,5 @@
 import discord
-from discord.ext import commands
-
+from redbot.core import commands
 
 class Steamcog(commands.Cog):
     def __init__(self, bot):
