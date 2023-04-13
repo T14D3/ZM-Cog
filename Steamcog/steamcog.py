@@ -36,42 +36,43 @@ class SteamCog(commands.Cog):
 
     @commands.command()
     async def cleanlist(self, ctx):
-    # Get the guild and role IDs from the cog settings
-    guild_id = self.settings.guild_id
-    role_ids = self.settings.role_ids
+        # Get the guild and role IDs from the cog settings
+        guild_id = self.settings.guild_id
+        role_ids = self.settings.role_ids
 
-    # Get the guild object
-    guild = self.bot.get_guild(guild_id)
+        # Get the guild object
+        guild = self.bot.get_guild(guild_id)
 
-    # Get the role objects by their IDs
-    roles_to_check = [guild.get_role(r) for r in role_ids]
+        # Get the role objects by their IDs
+        roles_to_check = [guild.get_role(r) for r in role_ids]
 
-    if not roles_to_check:
-        await ctx.send("No roles to check")
-        return
+        if not roles_to_check:
+            await ctx.send("No roles to check")
+            return
 
-    # Open the file and read the contents
-    with open(STEAMID_FILE, 'r') as f:
-        steamids = f.read().splitlines()
+        # Open the file and read the contents
+        with open(STEAMID_FILE, 'r') as f:
+            steamids = f.read().splitlines()
 
-    # Loop through the steam IDs and check if the users have the required roles
-    new_steamids = []
-    for line in steamids:
-        # Split the line into discord ID and steam ID
-        discord_id, steam_id = line.split("-")
+        # Loop through the steam IDs and check if the users have the required roles
+        new_steamids = []
+        for line in steamids:
+            # Split the line into discord ID and steam ID
+            discord_id, steam_id = line.split("-")
 
-        # Get the member object from the discord ID
-        member = guild.get_member(int(discord_id))
+            # Get the member object from the discord ID
+            member = guild.get_member(int(discord_id))
 
-        # Check if the member has any of the required roles
-        if any(role in member.roles for role in roles_to_check):
-            new_steamids.append(line)
+            # Check if the member has any of the required roles
+            if any(role in member.roles for role in roles_to_check):
+                new_steamids.append(line)
 
-    # Rewrite the file with the new steam IDs
-    with open(STEAMID_FILE, 'w') as f:
-        f.write('\n'.join(new_steamids))
+        # Rewrite the file with the new steam IDs
+        with open(STEAMID_FILE, 'w') as f:
+            f.write('\n'.join(new_steamids))
+    
+        await ctx.send("Cleaned the list.")
 
-    await ctx.send("Cleaned the list.")
 
 
 
