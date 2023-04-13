@@ -2,7 +2,7 @@ import discord
 from discord.ext import commands
 
 
-class SteamCog(commands.Cog):
+class Steamcog(commands.Cog):
     def __init__(self, bot):
         self.bot = bot
 
@@ -49,4 +49,4 @@ class SteamCog(commands.Cog):
 
 
 def setup(bot):
-    bot.add_cog(SteamCog(bot)) 
+    bot.add_cog(Steamcog(bot)) 
